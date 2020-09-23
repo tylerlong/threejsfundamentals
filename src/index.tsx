@@ -14,4 +14,6 @@ class App extends React.Component {
   }
 }
 
-ReactDOM.render(<App />, document.getElementsByTagName('body')[0]);
+const container = document.createElement('div');
+document.body.appendChild(container);
+ReactDOM.render(<App />, container);
