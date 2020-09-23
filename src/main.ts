@@ -26,25 +26,18 @@ const main = () => {
   const boxDepth = 1;
   const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
 
-  const makeInstance = (
-    geometry: THREE.BoxGeometry,
-    color: number,
-    x: number
-  ) => {
+  const makeInstance = (color: number, x: number) => {
     const material = new THREE.MeshPhongMaterial({color});
-
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
-
     cube.position.x = x;
-
     return cube;
   };
 
   const cubes = [
-    makeInstance(geometry, 0x44aa88, 0),
-    makeInstance(geometry, 0x8844aa, -2),
-    makeInstance(geometry, 0xaa8844, 2),
+    makeInstance(0x44aa88, 0),
+    makeInstance(0x8844aa, -2),
+    makeInstance(0xaa8844, 2),
   ];
 
   const render = (time: number) => {
