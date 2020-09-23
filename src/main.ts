@@ -40,8 +40,25 @@ const main = () => {
     makeInstance(0xaa8844, 2),
   ];
 
+  const resizeRendererToDisplaySize = (renderer: THREE.WebGLRenderer) => {
+    const canvas = renderer.domElement;
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+    const needResize = canvas.width !== width || canvas.height !== height;
+    if (needResize) {
+      renderer.setSize(width, height, false);
+    }
+    return needResize;
+  };
+
   const render = (time: number) => {
     time *= 0.001; // convert time to seconds
+
+    if (resizeRendererToDisplaySize(renderer)) {
+      const canvas = renderer.domElement;
+      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.updateProjectionMatrix();
+    }
 
     cubes.forEach((cube, ndx) => {
       const speed = 1 + ndx * 0.1;
