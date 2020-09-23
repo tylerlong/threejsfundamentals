@@ -1,0 +1,3 @@
+# threejs fundamentals
+
+This project is for learning purpose. Ref: https://threejsfundamentals.org/threejs/lessons/threejs-fundamentals.html
