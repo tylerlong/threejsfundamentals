@@ -1,95 +1,119 @@
 import * as THREE from 'three';
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {GUI} from 'dat.gui';
 
 const main = () => {
   const canvas = document.querySelector('#c') as HTMLCanvasElement;
   const renderer = new THREE.WebGLRenderer({canvas});
+  renderer.physicallyCorrectLights = true;
 
-  const fov = 75;
+  const fov = 45;
   const aspect = 2; // the canvas default
   const near = 0.1;
-  const far = 5;
+  const far = 100;
   const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.z = 2;
+  camera.position.set(0, 10, 20);
+
+  const controls = new OrbitControls(camera, canvas);
+  controls.target.set(0, 5, 0);
+  controls.update();
 
   const scene = new THREE.Scene();
+  scene.background = new THREE.Color('black');
 
-  const boxWidth = 1;
-  const boxHeight = 1;
-  const boxDepth = 1;
-  const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+  {
+    const planeSize = 40;
 
-  const cubes: THREE.Mesh[] = []; // just an array we can use to rotate the cubes
-  const loader = new THREE.TextureLoader();
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load(
+      'https://threejsfundamentals.org/threejs/resources/images/checker.png'
+    );
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.magFilter = THREE.NearestFilter;
+    const repeats = planeSize / 2;
+    texture.repeat.set(repeats, repeats);
 
-  const texture = loader.load(
-    'https://threejsfundamentals.org/threejs/resources/images/wall.jpg'
-  );
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-  });
-  const cube = new THREE.Mesh(geometry, material);
-  scene.add(cube);
-  cubes.push(cube); // add to our list of cubes to rotate
+    const planeGeo = new THREE.PlaneBufferGeometry(planeSize, planeSize);
+    const planeMat = new THREE.MeshPhongMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+    });
+    const mesh = new THREE.Mesh(planeGeo, planeMat);
+    mesh.rotation.x = Math.PI * -0.5;
+    scene.add(mesh);
+  }
+  {
+    const cubeSize = 4;
+    const cubeGeo = new THREE.BoxBufferGeometry(cubeSize, cubeSize, cubeSize);
+    const cubeMat = new THREE.MeshPhongMaterial({color: '#8AC'});
+    const mesh = new THREE.Mesh(cubeGeo, cubeMat);
+    mesh.position.set(cubeSize + 1, cubeSize / 2, 0);
+    scene.add(mesh);
+  }
+  {
+    const sphereRadius = 3;
+    const sphereWidthDivisions = 32;
+    const sphereHeightDivisions = 16;
+    const sphereGeo = new THREE.SphereBufferGeometry(
+      sphereRadius,
+      sphereWidthDivisions,
+      sphereHeightDivisions
+    );
+    const sphereMat = new THREE.MeshPhongMaterial({color: '#CA8'});
+    const mesh = new THREE.Mesh(sphereGeo, sphereMat);
+    mesh.position.set(-sphereRadius - 1, sphereRadius + 2, 0);
+    scene.add(mesh);
+  }
 
-  class DegRadHelper {
-    obj: THREE.Texture;
+  class ColorGUIHelper {
+    object: any;
     prop: string;
-    constructor(obj: THREE.Texture, prop: string) {
-      this.obj = obj;
+    constructor(object: any, prop: string) {
+      this.object = object;
       this.prop = prop;
     }
     get value() {
-      return THREE.MathUtils.radToDeg((this.obj as any)[this.prop]);
+      return `#${this.object[this.prop].getHexString()}`;
     }
-    set value(v) {
-      (this.obj as any)[this.prop] = THREE.MathUtils.degToRad(v);
-    }
-  }
-
-  class StringToNumberHelper {
-    obj: THREE.Texture;
-    prop: string;
-    constructor(obj: THREE.Texture, prop: string) {
-      this.obj = obj;
-      this.prop = prop;
-    }
-    get value(): any {
-      return (this.obj as any)[this.prop];
-    }
-    set value(v: any) {
-      (this.obj as any)[this.prop] = parseFloat(v);
+    set value(hexString) {
+      this.object[this.prop].set(hexString);
     }
   }
 
-  const wrapModes = {
-    ClampToEdgeWrapping: THREE.ClampToEdgeWrapping,
-    RepeatWrapping: THREE.RepeatWrapping,
-    MirroredRepeatWrapping: THREE.MirroredRepeatWrapping,
-  };
-
-  function updateTexture() {
-    texture.needsUpdate = true;
+  function makeXYZGUI(
+    gui: GUI,
+    vector3: THREE.Vector3,
+    name: string,
+    onChangeFn: (value?: any) => void
+  ) {
+    const folder = gui.addFolder(name);
+    folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
+    folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
+    folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
+    folder.open();
   }
 
-  const gui = new GUI();
-  gui
-    .add(new StringToNumberHelper(texture, 'wrapS'), 'value', wrapModes)
-    .name('texture.wrapS')
-    .onChange(updateTexture);
-  gui
-    .add(new StringToNumberHelper(texture, 'wrapT'), 'value', wrapModes)
-    .name('texture.wrapT')
-    .onChange(updateTexture);
-  gui.add(texture.repeat, 'x', 0, 5, 0.01).name('texture.repeat.x');
-  gui.add(texture.repeat, 'y', 0, 5, 0.01).name('texture.repeat.y');
-  gui.add(texture.offset, 'x', -2, 2, 0.01).name('texture.offset.x');
-  gui.add(texture.offset, 'y', -2, 2, 0.01).name('texture.offset.y');
-  gui.add(texture.center, 'x', -0.5, 1.5, 0.01).name('texture.center.x');
-  gui.add(texture.center, 'y', -0.5, 1.5, 0.01).name('texture.center.y');
-  gui
-    .add(new DegRadHelper(texture, 'rotation'), 'value', -360, 360)
-    .name('texture.rotation');
+  {
+    const color = 0xffffff;
+    const intensity = 1;
+    const light = new THREE.PointLight(color, intensity);
+    light.power = 800;
+    light.decay = 2;
+    light.distance = Infinity;
+    light.position.set(0, 10, 0);
+    scene.add(light);
+
+    const helper = new THREE.PointLightHelper(light);
+    scene.add(helper);
+
+    const gui = new GUI();
+    gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
+    gui.add(light, 'decay', 0, 4, 0.01);
+    gui.add(light, 'power', 0, 1220);
+
+    makeXYZGUI(gui, light.position, 'position', () => {});
+  }
 
   function resizeRendererToDisplaySize(renderer: THREE.Renderer) {
     const canvas = renderer.domElement;
@@ -102,21 +126,12 @@ const main = () => {
     return needResize;
   }
 
-  function render(time: number) {
-    time *= 0.001;
-
+  function render() {
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
-
-    cubes.forEach((cube, ndx) => {
-      const speed = 0.2 + ndx * 0.1;
-      const rot = time * speed;
-      cube.rotation.x = rot;
-      cube.rotation.y = rot;
-    });
 
     renderer.render(scene, camera);
 
