@@ -1,119 +1,65 @@
 import * as THREE from 'three';
-import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-import {GUI} from 'dat.gui';
 
 const main = () => {
   const canvas = document.querySelector('#c') as HTMLCanvasElement;
   const renderer = new THREE.WebGLRenderer({canvas});
-  renderer.physicallyCorrectLights = true;
 
-  const fov = 45;
-  const aspect = 2; // the canvas default
-  const near = 0.1;
-  const far = 100;
-  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  camera.position.set(0, 10, 20);
-
-  const controls = new OrbitControls(camera, canvas);
-  controls.target.set(0, 5, 0);
-  controls.update();
+  const left = 0;
+  const right = 300; // default canvas size
+  const top = 0;
+  const bottom = 150; // defautl canvas size
+  const near = -1;
+  const far = 1;
+  const camera = new THREE.OrthographicCamera(
+    left,
+    right,
+    top,
+    bottom,
+    near,
+    far
+  );
+  camera.zoom = 1;
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color('black');
 
-  {
-    const planeSize = 40;
-
-    const loader = new THREE.TextureLoader();
-    const texture = loader.load(
-      'https://threejsfundamentals.org/threejs/resources/images/checker.png'
-    );
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
+  const loader = new THREE.TextureLoader();
+  const textures = [
+    loader.load(
+      'https://threejsfundamentals.org/threejs/resources/images/flower-1.jpg'
+    ),
+    loader.load(
+      'https://threejsfundamentals.org/threejs/resources/images/flower-2.jpg'
+    ),
+    loader.load(
+      'https://threejsfundamentals.org/threejs/resources/images/flower-3.jpg'
+    ),
+    loader.load(
+      'https://threejsfundamentals.org/threejs/resources/images/flower-4.jpg'
+    ),
+    loader.load(
+      'https://threejsfundamentals.org/threejs/resources/images/flower-5.jpg'
+    ),
+    loader.load(
+      'https://threejsfundamentals.org/threejs/resources/images/flower-6.jpg'
+    ),
+  ];
+  const planeSize = 256;
+  const planeGeo = new THREE.PlaneBufferGeometry(planeSize, planeSize);
+  const planes = textures.map(texture => {
+    const planePivot = new THREE.Object3D();
+    scene.add(planePivot);
     texture.magFilter = THREE.NearestFilter;
-    const repeats = planeSize / 2;
-    texture.repeat.set(repeats, repeats);
-
-    const planeGeo = new THREE.PlaneBufferGeometry(planeSize, planeSize);
-    const planeMat = new THREE.MeshPhongMaterial({
+    const planeMat = new THREE.MeshBasicMaterial({
       map: texture,
       side: THREE.DoubleSide,
     });
     const mesh = new THREE.Mesh(planeGeo, planeMat);
-    mesh.rotation.x = Math.PI * -0.5;
-    scene.add(mesh);
-  }
-  {
-    const cubeSize = 4;
-    const cubeGeo = new THREE.BoxBufferGeometry(cubeSize, cubeSize, cubeSize);
-    const cubeMat = new THREE.MeshPhongMaterial({color: '#8AC'});
-    const mesh = new THREE.Mesh(cubeGeo, cubeMat);
-    mesh.position.set(cubeSize + 1, cubeSize / 2, 0);
-    scene.add(mesh);
-  }
-  {
-    const sphereRadius = 3;
-    const sphereWidthDivisions = 32;
-    const sphereHeightDivisions = 16;
-    const sphereGeo = new THREE.SphereBufferGeometry(
-      sphereRadius,
-      sphereWidthDivisions,
-      sphereHeightDivisions
-    );
-    const sphereMat = new THREE.MeshPhongMaterial({color: '#CA8'});
-    const mesh = new THREE.Mesh(sphereGeo, sphereMat);
-    mesh.position.set(-sphereRadius - 1, sphereRadius + 2, 0);
-    scene.add(mesh);
-  }
-
-  class ColorGUIHelper {
-    object: any;
-    prop: string;
-    constructor(object: any, prop: string) {
-      this.object = object;
-      this.prop = prop;
-    }
-    get value() {
-      return `#${this.object[this.prop].getHexString()}`;
-    }
-    set value(hexString) {
-      this.object[this.prop].set(hexString);
-    }
-  }
-
-  function makeXYZGUI(
-    gui: GUI,
-    vector3: THREE.Vector3,
-    name: string,
-    onChangeFn: (value?: any) => void
-  ) {
-    const folder = gui.addFolder(name);
-    folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
-    folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
-    folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
-    folder.open();
-  }
-
-  {
-    const color = 0xffffff;
-    const intensity = 1;
-    const light = new THREE.PointLight(color, intensity);
-    light.power = 800;
-    light.decay = 2;
-    light.distance = Infinity;
-    light.position.set(0, 10, 0);
-    scene.add(light);
-
-    const helper = new THREE.PointLightHelper(light);
-    scene.add(helper);
-
-    const gui = new GUI();
-    gui.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-    gui.add(light, 'decay', 0, 4, 0.01);
-    gui.add(light, 'power', 0, 1220);
-
-    makeXYZGUI(gui, light.position, 'position', () => {});
-  }
+    planePivot.add(mesh);
+    // move plane so top left corner is origin
+    mesh.position.set(planeSize / 2, planeSize / 2, 0);
+    return planePivot;
+  });
 
   function resizeRendererToDisplaySize(renderer: THREE.Renderer) {
     const canvas = renderer.domElement;
@@ -126,12 +72,38 @@ const main = () => {
     return needResize;
   }
 
-  function render() {
+  function render(time: number) {
+    time *= 0.001; // convert to seconds;
+
     if (resizeRendererToDisplaySize(renderer)) {
-      const canvas = renderer.domElement;
-      camera.aspect = canvas.clientWidth / canvas.clientHeight;
+      camera.right = canvas.width;
+      camera.bottom = canvas.height;
       camera.updateProjectionMatrix();
     }
+
+    const distAcross = Math.max(20, canvas.width - planeSize);
+    const distDown = Math.max(20, canvas.height - planeSize);
+
+    // total distance to move across and back
+    const xRange = distAcross * 2;
+    const yRange = distDown * 2;
+    const speed = 180;
+
+    planes.forEach((plane, ndx) => {
+      // compute a unique time for each plane
+      const t = time * speed + ndx * 300;
+
+      // get a value between 0 and range
+      const xt = t % xRange;
+      const yt = t % yRange;
+
+      // set our position going forward if 0 to half of range
+      // and backward if half of range to range
+      const x = xt < distAcross ? xt : xRange - xt;
+      const y = yt < distDown ? yt : yRange - yt;
+
+      plane.position.set(x, y, 0);
+    });
 
     renderer.render(scene, camera);
 
