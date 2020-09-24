@@ -9,11 +9,13 @@
   },
   "dependencies": {
     "antd": "^4.6.5",
+    "dat.gui": "^0.7.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "three": "^0.120.1"
   },
   "devDependencies": {
+    "@types/dat.gui": "^0.7.5",
     "@types/node": "^14.11.1",
     "@types/react-dom": "^16.9.8",
     "css-loader": "^4.3.0",
