@@ -1,5 +1,4 @@
 import {
-  AnimationClip,
   AnimationMixer,
   Color,
   DirectionalLight,
@@ -11,8 +10,10 @@ import {
   WebGLRenderer,
 } from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-import {GLTF, GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 import {SkeletonUtils} from 'three/examples/jsm/utils/SkeletonUtils';
+
+import {Model, Animations} from './types';
 
 const main = () => {
   const canvas = document.querySelector('#c') as HTMLCanvasElement;
@@ -52,14 +53,6 @@ const main = () => {
   manager.onProgress = (url, itemsLoaded, itemsTotal) => {
     progressbarElem.style.width = `${((itemsLoaded / itemsTotal) * 100) | 0}%`;
   };
-
-  type Model = {
-    url: string;
-    gltf?: GLTF;
-    animations?: Animations;
-  };
-
-  type Animations = {[s: string]: AnimationClip};
 
   const models: {[key: string]: Model} = {
     pig: {
