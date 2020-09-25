@@ -13,7 +13,7 @@ import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 import {SkeletonUtils} from 'three/examples/jsm/utils/SkeletonUtils';
 
-import {Model, Animations} from './types';
+import {Model} from './types';
 
 const main = () => {
   const canvas = document.querySelector('#c') as HTMLCanvasElement;
@@ -93,18 +93,12 @@ const main = () => {
     for (const model of Object.values(models)) {
       gltfLoader.load(model.url, gltf => {
         model.gltf = gltf;
+        model.animations = {};
+        gltf.animations.forEach(clip => {
+          model.animations![clip.name] = clip;
+        });
       });
     }
-  }
-
-  function prepModelsAndAnimations() {
-    Object.values(models).forEach(model => {
-      const animsByName: Animations = {};
-      model.gltf!.animations.forEach(clip => {
-        animsByName[clip.name] = clip;
-      });
-      model.animations = animsByName;
-    });
   }
 
   const mixers: AnimationMixer[] = [];
@@ -113,8 +107,6 @@ const main = () => {
     // hide the loading bar
     const loadingElem = document.querySelector('#loading') as HTMLDivElement;
     loadingElem.style.display = 'none';
-
-    prepModelsAndAnimations();
 
     Object.values(models).forEach((model: Model, ndx) => {
       const clonedScene = SkeletonUtils.clone(model.gltf!.scene) as Object3D;
