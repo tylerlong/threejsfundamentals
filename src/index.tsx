@@ -7,12 +7,7 @@ import main from './main';
 
 class App extends React.Component {
   render() {
-    return (
-      <>
-        <canvas id="c"></canvas>
-        <div id="info"></div>
-      </>
-    );
+    return <canvas id="c"></canvas>;
   }
   componentDidMount() {
     main();
