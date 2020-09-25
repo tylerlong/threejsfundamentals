@@ -7,4 +7,6 @@ export type Model = {
   animations?: Animations;
 };
 
-export type Animations = {[s: string]: AnimationClip};
+export type Animations = {[key: string]: AnimationClip};
+
+export type Models = {[key: string]: Model};
