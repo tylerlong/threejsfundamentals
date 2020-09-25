@@ -7,7 +7,19 @@ import main from './main';
 
 class App extends React.Component {
   render() {
-    return <canvas id="c"></canvas>;
+    return (
+      <>
+        <canvas id="c"></canvas>
+        <div id="loading">
+          <div>
+            <div>...loading...</div>
+            <div className="progress">
+              <div id="progressbar"></div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
   }
   componentDidMount() {
     main();
