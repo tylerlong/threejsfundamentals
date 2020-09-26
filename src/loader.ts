@@ -11,7 +11,6 @@ export const load = () => {
       store.loadPercent = 100;
       resolve(models);
     };
-
     manager.onProgress = (url, itemsLoaded, itemsTotal) => {
       store.loadPercent = (itemsLoaded / itemsTotal) * 100;
     };
@@ -50,13 +49,11 @@ export const load = () => {
           'https://threejsfundamentals.org/threejs/resources/models/knight/KnightCharacter.gltf',
       },
     };
-    {
-      const gltfLoader = new GLTFLoader(manager);
-      for (const model of Object.values(models)) {
-        gltfLoader.load(model.url, gltf => {
-          model.gltf = gltf;
-        });
-      }
+    const gltfLoader = new GLTFLoader(manager);
+    for (const model of Object.values(models)) {
+      gltfLoader.load(model.url, gltf => {
+        model.gltf = gltf;
+      });
     }
   });
 };

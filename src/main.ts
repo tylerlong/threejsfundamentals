@@ -85,22 +85,17 @@ const main = async () => {
     now *= 0.001; // convert to seconds
     const deltaTime = now - then;
     then = now;
-
     if (resizeRendererToDisplaySize(renderer)) {
       const canvas = renderer.domElement;
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
-
     for (const mixer of mixers) {
       mixer.update(deltaTime);
     }
-
     renderer.render(scene, camera);
-
     requestAnimationFrame(render);
   }
-
   requestAnimationFrame(render);
 };
 
