@@ -2,23 +2,23 @@ import './index.css';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {Component} from 'react-subx';
+import {Progress} from 'antd';
 
 import main from './main';
+import store, {StoreType} from './store';
 
-class App extends React.Component {
+type PropsStore = {
+  store: StoreType;
+};
+
+class App extends Component<PropsStore> {
   render() {
-    return (
-      <>
-        <canvas id="c"></canvas>
-        <div id="loading">
-          <div>
-            <div>...loading...</div>
-            <div className="progress">
-              <div id="progressbar"></div>
-            </div>
-          </div>
-        </div>
-      </>
+    const store = this.props.store;
+    return store.loadPercent === 100 ? (
+      <canvas id="c"></canvas>
+    ) : (
+      <Progress percent={store.loadPercent} />
     );
   }
   componentDidMount() {
@@ -28,4 +28,4 @@ class App extends React.Component {
 
 const container = document.createElement('div');
 document.body.appendChild(container);
-ReactDOM.render(<App />, container);
+ReactDOM.render(<App store={store} />, container);

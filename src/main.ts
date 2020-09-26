@@ -15,6 +15,8 @@ import {Model} from './types';
 import {load} from './loader';
 
 const main = async () => {
+  const models = await load();
+
   const canvas = document.querySelector('#c') as HTMLCanvasElement;
   const renderer = new WebGLRenderer({canvas});
 
@@ -42,8 +44,6 @@ const main = async () => {
   }
   addLight(5, 5, 2);
   addLight(-5, 5, 5);
-
-  const models = await load();
 
   // prepare animations
   Object.values(models).forEach(model => {
