@@ -11,11 +11,10 @@ import {
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
 import {SkeletonUtils} from 'three/examples/jsm/utils/SkeletonUtils';
 
-import {Model} from './types';
 import {load} from './loader';
 
 const main = async () => {
-  const models = await load();
+  const gltfs = await load();
 
   const canvas = document.querySelector('#c') as HTMLCanvasElement;
   const renderer = new WebGLRenderer({canvas});
@@ -45,25 +44,16 @@ const main = async () => {
   addLight(5, 5, 2);
   addLight(-5, 5, 5);
 
-  // prepare animations
-  Object.values(models).forEach(model => {
-    model.animations = {};
-    model.gltf!.animations.forEach(clip => {
-      model.animations![clip.name] = clip;
-    });
-  });
-
-  // play animations
   const mixers: AnimationMixer[] = [];
-  Object.values(models).forEach((model: Model, ndx) => {
-    const clonedScene = SkeletonUtils.clone(model.gltf!.scene) as Object3D;
+  gltfs.forEach((gltf, index) => {
+    const clonedScene = SkeletonUtils.clone(gltf.scene) as Object3D;
     const root = new Object3D();
     root.add(clonedScene);
     scene.add(root);
-    root.position.x = (ndx - 3) * 3;
+    root.position.x = (index - 3) * 3;
 
     const mixer = new AnimationMixer(clonedScene);
-    const firstClip = Object.values(model.animations!)[0];
+    const firstClip = gltf.animations[0];
     const action = mixer.clipAction(firstClip);
     action.play();
     mixers.push(mixer);
