@@ -44,7 +44,7 @@ const main = async () => {
   addLight(5, 5, 2);
   addLight(-5, 5, 5);
 
-  const mixers: AnimationMixer[] = [];
+  const animationMixers: AnimationMixer[] = [];
   gltfs.forEach((gltf, index) => {
     const clonedScene = SkeletonUtils.clone(gltf.scene) as Object3D;
     const root = new Object3D();
@@ -52,11 +52,22 @@ const main = async () => {
     scene.add(root);
     root.position.x = (index - 3) * 3;
 
-    const mixer = new AnimationMixer(clonedScene);
-    const firstClip = gltf.animations[0];
-    const action = mixer.clipAction(firstClip);
-    action.play();
-    mixers.push(mixer);
+    const animationMixer = new AnimationMixer(clonedScene);
+    animationMixers.push(animationMixer);
+
+    const animation = gltf.animations[0];
+    animationMixer.clipAction(animation).play();
+  });
+  let animationIndex = 0;
+  window.addEventListener('keydown', e => {
+    const index = parseInt(e.key) - 1;
+    const gltf = gltfs[index];
+    if (gltf) {
+      animationIndex = ++animationIndex % gltf.animations.length;
+      const animation = gltf.animations[animationIndex];
+      animationMixers[index].stopAllAction();
+      animationMixers[index].clipAction(animation).play();
+    }
   });
 
   function resizeRendererToDisplaySize(renderer: Renderer) {
@@ -80,7 +91,7 @@ const main = async () => {
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
-    for (const mixer of mixers) {
+    for (const mixer of animationMixers) {
       mixer.update(deltaTime);
     }
     renderer.render(scene, camera);
