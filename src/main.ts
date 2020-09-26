@@ -1,5 +1,4 @@
 import {
-  AnimationMixer,
   Color,
   DirectionalLight,
   Object3D,
@@ -9,7 +8,6 @@ import {
   WebGLRenderer,
 } from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
-import {SkeletonUtils} from 'three/examples/jsm/utils/SkeletonUtils';
 
 import {load} from './loader';
 
@@ -44,29 +42,22 @@ const main = async () => {
   addLight(5, 5, 2);
   addLight(-5, 5, 5);
 
-  const animationMixers: AnimationMixer[] = [];
+  let animationIndex = 0;
   gltfs.forEach((gltf, index) => {
-    const clonedScene = SkeletonUtils.clone(gltf.scene) as Object3D;
     const root = new Object3D();
-    root.add(clonedScene);
+    root.add(gltf.scene);
     scene.add(root);
     root.position.x = (index - 3) * 3;
 
-    const animationMixer = new AnimationMixer(clonedScene);
-    animationMixers.push(animationMixer);
-
-    const animation = gltf.animations[0];
-    animationMixer.clipAction(animation).play();
+    gltf.animationMixer.clipAction(gltf.animations[animationIndex]).play();
   });
-  let animationIndex = 0;
+
   window.addEventListener('keydown', e => {
-    const index = parseInt(e.key) - 1;
-    const gltf = gltfs[index];
+    const gltf = gltfs[parseInt(e.key) - 1];
     if (gltf) {
       animationIndex = ++animationIndex % gltf.animations.length;
-      const animation = gltf.animations[animationIndex];
-      animationMixers[index].stopAllAction();
-      animationMixers[index].clipAction(animation).play();
+      gltf.animationMixer.stopAllAction();
+      gltf.animationMixer.clipAction(gltf.animations[animationIndex]).play();
     }
   });
 
@@ -91,8 +82,8 @@ const main = async () => {
       camera.aspect = canvas.clientWidth / canvas.clientHeight;
       camera.updateProjectionMatrix();
     }
-    for (const mixer of animationMixers) {
-      mixer.update(deltaTime);
+    for (const gltf of gltfs) {
+      gltf.animationMixer.update(deltaTime);
     }
     renderer.render(scene, camera);
     requestAnimationFrame(render);
