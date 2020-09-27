@@ -48,7 +48,6 @@ const main = async () => {
     root.add(gltf.scene);
     scene.add(root);
     root.position.x = (index - 3) * 3;
-
     gltf.animationMixer.clipAction(gltf.animations[animationIndex]).play();
   });
 
